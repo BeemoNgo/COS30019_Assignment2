@@ -1,48 +1,84 @@
+from propositionalSymbol import PropositionalSymbol
+import re
 
 class Clause:
-    """
-    This class is used to represent a propositional logic clause with the following fields:
-    right: the right clause
-    left: the left clause
-    operator: the logic operator
-    """
-    def __init__(self, *, right, left=None, operator=None): # * is used to force keyword argument
-        self.satisfied = False
-        self.left = left
-        if operator:
-            self.operator = operator.strip() # remove any whitespace
-        else:
-            self.operator = None
-        self.right = right
+    def __init__(self, expression):
+        self.expression = expression.strip()
+        self.symbols = {}  # Store symbols as a dictionary for easy access
+        self.postfix = self.infix_to_postfix(self.expression)
 
-    def setPropositionalSymbol(self, model):
+    def set_propositional_symbol(self, model):
         """
-        Given a model, this function will assign values to the right and left clauses
+        Set the values of the propositional symbols based on the provided model.
         """
-        if self.left: # check if self.left is not None
-            self.left.setPropositionalSymbol(model)
-        self.right.setPropositionalSymbol(model)
+        for symbol_name, symbol_obj in self.symbols.items():
+            if symbol_name in model:
+                symbol_obj.set_propositional_symbol(model)
+    def __str__(self) -> str:
+        return f"{self.expression}, postfix:{self.postfix}"
 
-    def getValue(self):
+    def get_value(self, symbol):
         """
-        This function will return the value (T/F) of the clause based on the operator
+        Retrieve the value of a specific propositional symbol if it has been set.
         """
-        if self.left is None and self.operator is None: # if the clause is made up of a single symbol
-            return self.right.getValue()
-        else:
-            if self.operator == "&":
-                return self.left.getValue() and self.right.getValue()
-            elif self.operator == "=>":
-                return (not self.left.getValue()) or self.right.getValue()
-            elif self.operator == "||":
-                return self.left.getValue() or self.right.getValue()
-            elif self.operator == "<=>":
-                return self.left.getValue() == self.right.getValue()
-            elif self.operator == "~":
-                return not self.right.getValue()
-            
-    def getNumberOfOperands(self):
+        symbol_obj = self.symbols.get(symbol)
+        return symbol_obj.get_value() if symbol_obj else None
+
+    def evaluate(self):
         """
-        This function will return the total number of operands of the clause
+        Evaluate the logical expression based on the current values of the propositional symbols.
         """
-        return self.right.getNumberOfOperands() + (self.left.getNumberOfOperands() if self.left else 0)
+        stack = []
+        for token in self.postfix:
+            if isinstance(token, PropositionalSymbol):
+                stack.append(token.get_value())
+            elif token == '~':
+                operand = stack.pop()
+                stack.append(not operand)
+            else:
+                right = stack.pop()
+                if token in ['&', '|', '=>', '<=>'] and stack:
+                    left = stack.pop()
+                if token == '&':
+                    stack.append(left and right)
+                elif token == '|':
+                    stack.append(left or right)
+                elif token == '=>':
+                    stack.append(not left or right)
+                elif token == '<=>':
+                    stack.append(left == right)
+
+        return stack.pop() if stack else None
+
+    def infix_to_postfix(self, expression):
+        """
+        Convert infix expression to postfix expression using the Shunting Yard algorithm.
+        """
+        precedence = {'~': 3, '&': 2, '|': 1, '=>': 0, '<=>': 0}
+        stack = []
+        postfix = []
+        # Improved tokenization to handle symbols with numbers and operators, considering spaces
+        tokens = re.findall(r"\s*([a-zA-Z][a-zA-Z0-9]*|<=>|=>|&|\||~|\(|\))\s*", expression)
+
+        for token in tokens:
+            token = token.strip()
+            if re.match(r"[a-zA-Z][a-zA-Z0-9]*", token):
+                if token not in self.symbols:
+                    self.symbols[token] = PropositionalSymbol(token)
+                postfix.append(self.symbols[token])
+            elif token == '(':
+                stack.append(token)
+            elif token == ')':
+                while stack and stack[-1] != '(':
+                    postfix.append(stack.pop())
+                stack.pop()
+            else:
+                while (stack and stack[-1] != '(' and
+                       precedence[token] <= precedence.get(stack[-1], -1)):
+                    postfix.append(stack.pop())
+                stack.append(token)
+
+        while stack:
+            postfix.append(stack.pop())
+
+        return postfix
