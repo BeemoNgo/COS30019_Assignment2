@@ -1,10 +1,9 @@
 import sympy 
-from sympy import And, Or, Implies, Not, Equivalent, Symbol
-from sympy.parsing.sympy_parser import parse_expr
 import random
 import string
 import re
 import unittest
+from clause import Clause
 
 class Parse():
     def __init__(self):
@@ -21,10 +20,14 @@ class Parse():
 
         # Remove unwanted whitespace and newlines
         tell_clauses = tell_content.strip().split(';')
-        self.query = ask_section.strip()
+        a = ask_section.strip()
+        for x in a:
+            self.query.append(Clause(x))
 
         # Remove extra whitespace around clauses
-        self.knowledge_base = [clause.strip() for clause in tell_clauses if clause.strip()]
+        temp  = [clause.strip() for clause in tell_clauses if clause.strip()]
+        for x in temp:
+            self.knowledge_base.append(Clause(x))
 
         # This is where you would convert clauses into your specific Clause objects if necessary
         # For example: self.knowledge_base = [Clause(clause) for clause in self.knowledge_base]

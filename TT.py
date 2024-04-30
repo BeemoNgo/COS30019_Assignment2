@@ -8,6 +8,5 @@ class TruthTable:
     def generateTable(self,symbols, model):
         
 
-
     def extend(self, symbol, value, model):
         """This function extends the model with a new symbol"""
