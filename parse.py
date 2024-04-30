@@ -22,7 +22,7 @@ class Parse():
         tell_clauses = tell_content.strip().split(';')
         a = ask_section.strip()
         for x in a:
-            self.query.append(Clause(x))
+            self.query = Clause(a)
 
         # Remove extra whitespace around clauses
         temp  = [clause.strip() for clause in tell_clauses if clause.strip()]
