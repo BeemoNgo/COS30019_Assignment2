@@ -2,13 +2,13 @@ import sympy
 import random
 import string
 import re
-import unittest
 from clause import Clause
 
 class Parse():
     def __init__(self):
         self.knowledge_base = []
         self.query = None
+        self.symbols = []
 
     def readfile(self, file_path):
         with open(file_path, 'r') as file:
@@ -21,15 +21,27 @@ class Parse():
         # Remove unwanted whitespace and newlines
         tell_clauses = tell_content.strip().split(';')
         a = ask_section.strip()
-        for x in a:
-            self.query = Clause(a)
+        self.query = Clause(a)
 
         # Remove extra whitespace around clauses
         temp  = [clause.strip() for clause in tell_clauses if clause.strip()]
+        # print(temp)
         for x in temp:
             self.knowledge_base.append(Clause(x))
+        self.extract_symbols()
+        return self.knowledge_base, self.query, self.symbols
+    
+    def extract_symbols(self):
+        # Initialize a set to keep symbols unique
+        symbol_set = set()
 
-        # This is where you would convert clauses into your specific Clause objects if necessary
-        # For example: self.knowledge_base = [Clause(clause) for clause in self.knowledge_base]
+        # Extract symbols from each clause in the knowledge base
+        for clause in self.knowledge_base:
+            symbol_set.update(clause.get_symbols())
 
-        return self.knowledge_base, self.query
+        # Extract symbols from the query
+        if self.query:
+            symbol_set.update(self.query.get_symbols())
+        print(symbol_set)
+        # Convert the set to a list and assign to the symbols attribute
+        self.symbols = list(symbol_set)

@@ -1,5 +1,7 @@
 from propositionalSymbol import PropositionalSymbol
 import re
+from sympy import And, Or, Implies, Not, Equivalent, Symbol
+from sympy.parsing.sympy_parser import parse_expr
 
 class Clause:
     def __init__(self, expression):
@@ -16,6 +18,13 @@ class Clause:
                 symbol_obj.set_propositional_symbol(model)
     def __str__(self) -> str:
         return f"{self.expression}, postfix:{self.postfix}"
+    
+    def get_symbols(self):
+        temp = []
+        for x in self.symbols:
+            temp.append(x)
+        print(temp)
+        return temp
 
     def get_value(self, symbol):
         """
@@ -55,8 +64,8 @@ class Clause:
         Convert infix expression to postfix expression using the Shunting Yard algorithm.
         """
         precedence = {'~': 3, '&': 2, '|': 1, '=>': 0, '<=>': 0}
-        stack = []
-        postfix = []
+        stack = [] # store operators and parentheses
+        postfix = [] #store the resulting postfix expression
         # Improved tokenization to handle symbols with numbers and operators, considering spaces
         tokens = re.findall(r"\s*([a-zA-Z][a-zA-Z0-9]*|<=>|=>|&|\||~|\(|\))\s*", expression)
 
@@ -64,7 +73,8 @@ class Clause:
             token = token.strip()
             if re.match(r"[a-zA-Z][a-zA-Z0-9]*", token):
                 if token not in self.symbols:
-                    self.symbols[token] = PropositionalSymbol(token)
+                    self.symbols[token] = PropositionalSymbol(token) #If the symbol is not in self.symbols,
+                                                        #it creates a new PropositionalSymbol object and adds it to self.symbols.
                 postfix.append(self.symbols[token])
             elif token == '(':
                 stack.append(token)

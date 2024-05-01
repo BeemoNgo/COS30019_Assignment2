@@ -1,5 +1,5 @@
 class PropositionalSymbol:
-    def __init__(self, symbol, value=None):
+    def __init__(self, symbol, value=False):
         self.symbol = symbol.strip()  # Remove whitespace from the symbol
         self.value = value           # Boolean value of the symbol, initially set to None
 
