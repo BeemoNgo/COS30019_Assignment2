@@ -23,7 +23,6 @@ class Clause:
         temp = []
         for x in self.symbols:
             temp.append(x)
-        print(temp)
         return temp
 
     def get_value(self, symbol):
@@ -46,11 +45,11 @@ class Clause:
                 stack.append(not operand)
             else:
                 right = stack.pop()
-                if token in ['&', '|', '=>', '<=>'] and stack:
+                if token in ['&', '||', '=>', '<=>'] and stack:
                     left = stack.pop()
                 if token == '&':
                     stack.append(left and right)
-                elif token == '|':
+                elif token == '||':
                     stack.append(left or right)
                 elif token == '=>':
                     stack.append(not left or right)
@@ -58,16 +57,18 @@ class Clause:
                     stack.append(left == right)
 
         return stack.pop() if stack else None
+    
+
 
     def infix_to_postfix(self, expression):
         """
         Convert infix expression to postfix expression using the Shunting Yard algorithm.
         """
-        precedence = {'~': 3, '&': 2, '|': 1, '=>': 0, '<=>': 0}
+        precedence = {'~': 3, '&': 2, '||': 1, '=>': 0, '<=>': 0}
         stack = [] # store operators and parentheses
         postfix = [] #store the resulting postfix expression
         # Improved tokenization to handle symbols with numbers and operators, considering spaces
-        tokens = re.findall(r"\s*([a-zA-Z][a-zA-Z0-9]*|<=>|=>|&|\||~|\(|\))\s*", expression)
+        tokens = re.findall(r"\s*([a-zA-Z][a-zA-Z0-9]*|<=>|=>|&|\|\||~|\(|\))\s*", expression)
 
         for token in tokens:
             token = token.strip()

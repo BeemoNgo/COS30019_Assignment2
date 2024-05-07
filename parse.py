@@ -42,6 +42,6 @@ class Parse():
         # Extract symbols from the query
         if self.query:
             symbol_set.update(self.query.get_symbols())
-        print(symbol_set)
-        # Convert the set to a list and assign to the symbols attribute
+        # # print(symbol_set)
+        # # Convert the set to a list and assign to the symbols attribute
         self.symbols = list(symbol_set)
