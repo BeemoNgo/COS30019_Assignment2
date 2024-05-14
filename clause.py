@@ -1,7 +1,7 @@
 from propositionalSymbol import PropositionalSymbol
 import re
-from sympy import And, Or, Implies, Not, Equivalent, Symbol
-from sympy.parsing.sympy_parser import parse_expr
+# from sympy import And, Or, Implies, Not, Equivalent, Symbol
+# from sympy.parsing.sympy_parser import parse_expr
 
 class Clause:
     def __init__(self, expression):
@@ -30,7 +30,7 @@ class Clause:
 
     def __str__(self) -> str:
         return f"{self.expression}, postfix:{self.postfix}"
-    
+
     def get_symbols(self):
         temp = []
         for x in self.symbols:
@@ -69,7 +69,7 @@ class Clause:
                     stack.append(left == right)
 
         return stack.pop() if stack else None
-    
+
 
 
     def infix_to_postfix(self, expression):
