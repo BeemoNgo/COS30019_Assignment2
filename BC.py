@@ -1,6 +1,7 @@
 import sys
 sys.setrecursionlimit(10000)
 from clause import Clause
+
 class BC:
     def __init__(self):
         self.output = ""
