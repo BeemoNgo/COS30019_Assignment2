@@ -3,7 +3,28 @@ import random
 import string
 import re
 from clause import Clause
+"""
+    This class is responsible for parsing input files, it will initialize itself with the knowledge base and query.
 
+    Methods:
+    The readfile() method reads the input file located at `file_path` and extracts the clauses from the TELL and ASK sections.
+        
+        - Opens the file and reads its content.
+        - Splits the content based on the TELL and ASK keywords.
+        - Extracts the TELL section content, splits it into individual clauses, and removes whitespace.
+        - Extracts the ASK section content and creates a Clause object for the query.
+        - Removes extra whitespace around clauses and adds them to the knowledge base.
+        - Calls `extract_symbols` to extract unique symbols from clauses.
+        - Returns the knowledge base, query, and symbols extracted.
+
+    The extract_smybols() method extracts unique symbols from the knowledge base clauses and the query.
+        
+        - Initializes a set to store symbols and keep them unique.
+        - Iterates through each clause in the knowledge base and updates the symbol set.
+        - Updates the symbol set with symbols from the query clause.
+        - Converts the set to a list and assigns it to the `symbols` attribute.
+
+"""
 class Parse():
     def __init__(self):
         self.knowledge_base = []

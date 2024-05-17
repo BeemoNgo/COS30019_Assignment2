@@ -4,8 +4,24 @@ from parse import Parse
 from clause import Clause
 from propositionalSymbol import PropositionalSymbol
 from TT import TruthTable
+from FC import FC
+from BC import BC
 parse = Parse()
-parse.readfile("test_HornKB.txt")
+parse.readfile("test.txt")
+# print(parse.symbols)
+# print(parse.knowledge_base)
+
+print("FC method")
+fc = FC()
+fc.infer(parse.knowledge_base, parse.query)
+print(fc.output)
+
+print("BC method")
+bc = BC()
+bc.infer(parse.knowledge_base, parse.query)
+print(bc.output)
+
+print("TT method")
 tt = TruthTable()
 tt.infer(parse.knowledge_base, parse.query)
 print(tt.output)

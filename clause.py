@@ -1,13 +1,14 @@
 from propositionalSymbol import PropositionalSymbol
 import re
-from sympy import And, Or, Implies, Not, Equivalent, Symbol
-from sympy.parsing.sympy_parser import parse_expr
+# from sympy import And, Or, Implies, Not, Equivalent, Symbol
+# from sympy.parsing.sympy_parser import parse_expr
 
 class Clause:
     def __init__(self, expression):
         self.expression = expression.strip()
         self.symbols = {}  # Store symbols as a dictionary for easy access
         self.postfix = self.infix_to_postfix(self.expression)
+        self.count = 0
 
     def set_propositional_symbol(self, model):
         """
@@ -16,9 +17,20 @@ class Clause:
         for symbol_name, symbol_obj in self.symbols.items():
             if symbol_name in model:
                 symbol_obj.set_propositional_symbol(model)
+
+    def get_count(self):
+        if len(self.postfix) >=3:
+            self.count = len(self.symbols)-1
+        return self.count
+
+    def isInferredSymbol(self):
+        if len(self.postfix) == 1:
+            return True
+        return False
+
     def __str__(self) -> str:
         return f"{self.expression}, postfix:{self.postfix}"
-    
+
     def get_symbols(self):
         temp = []
         for x in self.symbols:
@@ -57,7 +69,7 @@ class Clause:
                     stack.append(left == right)
 
         return stack.pop() if stack else None
-    
+
 
 
     def infix_to_postfix(self, expression):
