@@ -1,4 +1,3 @@
-import re
 import sys
 sys.setrecursionlimit(10000)
 from clause import Clause
@@ -8,7 +7,7 @@ class BC:
         self.output = "NO"
         self.outputSymbols = []
 
-    def getOutput(self):
+    def getOutput(self): 
         return self.output
 
     def infer(self, kb, query):

@@ -2,7 +2,8 @@ import sys
 sys.setrecursionlimit(10000)
 import copy
 from propositionalSymbol import PropositionalSymbol
-class TruthTable:
+
+class TT:
     def __init__(self):
         self.output = ""
         self.count = 0

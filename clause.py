@@ -1,7 +1,7 @@
 from propositionalSymbol import PropositionalSymbol
 import re
+import sympy
 from sympy import And, Or, Implies, Not, Equivalent, Symbol
-from sympy.parsing.sympy_parser import parse_expr
 
 class Clause:
     def __init__(self, expression):
@@ -67,8 +67,8 @@ class Clause:
                     stack.append(not left or right)
                 elif token == '<=>':
                     stack.append(left == right)
-
-        return stack.pop() if stack else None
+        result = stack.pop() if stack else None
+        return result
     
 
 
@@ -105,3 +105,44 @@ class Clause:
             postfix.append(stack.pop())
 
         return postfix
+    
+    def to_cnf(self):
+        symbols = list(self.symbols.keys())
+        cnf_clauses = []
+        postfix = self.postfix
+        stack = []
+
+        for token in postfix:
+            if isinstance(token, PropositionalSymbol):
+                stack.append(token.symbol)
+            elif token == '~':
+                operand = stack.pop()
+                stack.append(f"~{operand}")
+            else:
+                right = stack.pop()
+                left = stack.pop()
+                if token == '&':
+                    stack.append(f"({left} & {right})")
+                elif token == '||':
+                    stack.append(f"({left} || {right})")
+                elif token == '=>':
+                    stack.append(f"(~{left} || {right})")
+                elif token == '<=>':
+                    stack.append(f"(({left} & {right}) || (~{left} & ~{right}))")
+
+        expression = stack.pop()
+        expression = expression.replace("&", "and").replace("||", "or").replace("~", "not ")
+        cnf_expression = sympy.to_cnf(expression)
+        cnf_clauses_str = str(cnf_expression).replace("(", "").replace(")", "").split(" & ")
+
+        for clause_str in cnf_clauses_str:
+            clause = clause_str.replace("or", "").replace(" ", "").split("|")
+            cnf_clause = []
+            for literal in clause:
+                if literal.startswith("not"):
+                    cnf_clause.append(-symbols.index(literal[3:]) - 1)
+                else:
+                    cnf_clause.append(symbols.index(literal) + 1)
+            cnf_clauses.append(cnf_clause)
+
+        return cnf_clauses

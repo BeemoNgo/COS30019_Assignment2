@@ -1,11 +1,12 @@
 import sys
-import unittest
 from parse import Parse
 from clause import Clause
 from propositionalSymbol import PropositionalSymbol
-from TT import TruthTable
+from TT import TT
 from FC import FC
 from BC import BC
+# from WSAT import WSAT
+from DPLL import DPLL
 parse = Parse()
 parse.readfile("test_HornKB.txt")
 # print(parse.symbols)
@@ -22,9 +23,18 @@ bc.infer(parse.knowledge_base, parse.query)
 print(bc.output)
 
 print("TT method")
-tt = TruthTable()
+tt = TT()
 tt.infer(parse.knowledge_base, parse.query)
 print(tt.output)
+
+print("DPLL method")
+dpll = DPLL()  # Create an instance of DPLL
+result = dpll.infer(parse.knowledge_base, parse.symbols)  # Infer using the knowledge base and symbols
+print(result)  # Print the result returned by the DPLL algorithm
+
+
+
+# method = {"tt":TT,"fc": FC,"bc":BC, "wsat":WSAT}
 # a= PropositionalSymbol("a", True)
 # print(a, a.get_value())
 # a.set_propositional_symbol({"a":False,"b":True})
