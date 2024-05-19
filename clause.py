@@ -30,7 +30,7 @@ class Clause:
 
     def __str__(self) -> str:
         return f"{self.expression}, postfix:{self.postfix}"
-    
+
     def get_symbols(self):
         temp = []
         for x in self.symbols:
@@ -67,9 +67,8 @@ class Clause:
                     stack.append(not left or right)
                 elif token == '<=>':
                     stack.append(left == right)
-        result = stack.pop() if stack else None
-        return result
-    
+        return stack.pop() if stack else None
+
 
 
     def infix_to_postfix(self, expression):
