@@ -23,7 +23,7 @@ class Clause:
             self.count = len(self.symbols)-1
         return self.count
 
-    def isInferredSymbol(self):
+    def isInferredSymbol(self): #checks if the clause represents an inferred symbol
         if len(self.postfix) == 1:
             return True
         return False
@@ -31,7 +31,7 @@ class Clause:
     def __str__(self) -> str:
         return f"{self.expression}, postfix:{self.postfix}"
 
-    def get_symbols(self):
+    def get_symbols(self): #a list of symbols present in the clause
         temp = []
         for x in self.symbols:
             temp.append(x)
@@ -50,23 +50,23 @@ class Clause:
         """
         stack = []
         for token in self.postfix:
-            if isinstance(token, PropositionalSymbol):
+            if isinstance(token, PropositionalSymbol):  #check if token is a PropositionalSymbol
                 stack.append(token.get_value())
-            elif token == '~':
+            elif token == '~': #if token is negation
                 operand = stack.pop()
-                stack.append(not operand)
+                stack.append(not operand) #apply negation and push the result to the stack
             else:
-                right = stack.pop()
-                if token in ['&', '||', '=>', '<=>'] and stack:
-                    left = stack.pop()
-                if token == '&':
-                    stack.append(left and right)
-                elif token == '||':
-                    stack.append(left or right)
-                elif token == '=>':
-                    stack.append(not left or right)
-                elif token == '<=>':
-                    stack.append(left == right)
+                right = stack.pop() # Pop the right operand from the stack
+                if token in ['&', '||', '=>', '<=>'] and stack: #check if stack is not empty for binary operators
+                    left = stack.pop() #pop the left operand from the stack
+                if token == '&': # Logical AND
+                    stack.append(left and right) #perform AND operation and push result to stack
+                elif token == '||': # Logical OR
+                    stack.append(left or right) #perform OR operation and push result to stack
+                elif token == '=>': # Implication
+                    stack.append(not left or right) # Perform implication operation and push result to stack
+                elif token == '<=>': # Equivalence
+                    stack.append(left == right) # Perform equivalence operation and push result to stack
         return stack.pop() if stack else None
 
 
@@ -75,77 +75,78 @@ class Clause:
         """
         Convert infix expression to postfix expression using the Shunting Yard algorithm.
         """
-        precedence = {'~': 3, '&': 2, '||': 1, '=>': 0, '<=>': 0}
+        precedence = {'~': 3, '&': 2, '||': 1, '=>': 0, '<=>': 0} # Define operator precedence
+
         stack = [] # store operators and parentheses
         postfix = [] #store the resulting postfix expression
-        # Improved tokenization to handle symbols with numbers and operators, considering spaces
+        # Tokenize the input expression
         tokens = re.findall(r"\s*([a-zA-Z][a-zA-Z0-9]*|<=>|=>|&|\|\||~|\(|\))\s*", expression)
 
         for token in tokens:
-            token = token.strip()
-            if re.match(r"[a-zA-Z][a-zA-Z0-9]*", token):
+            token = token.strip() # Remove leading and trailing spaces
+            if re.match(r"[a-zA-Z][a-zA-Z0-9]*", token): # If token is a symbol
                 if token not in self.symbols:
                     self.symbols[token] = PropositionalSymbol(token) #If the symbol is not in self.symbols,
                                                         #it creates a new PropositionalSymbol object and adds it to self.symbols.
                 postfix.append(self.symbols[token])
-            elif token == '(':
+            elif token == '(': # If token is an opening parenthesis
                 stack.append(token)
-            elif token == ')':
-                while stack and stack[-1] != '(':
+            elif token == ')': # If token is a closing parenthesis
+                while stack and stack[-1] != '(': # Pop operators from the stack until matching '(' is found
                     postfix.append(stack.pop())
-                stack.pop()
-            else:
+                stack.pop() # Pop the '(' from stack
+            else: # If token is an operator
                 while (stack and stack[-1] != '(' and
-                       precedence[token] <= precedence.get(stack[-1], -1)):
-                    postfix.append(stack.pop())
-                stack.append(token)
+                       precedence[token] <= precedence.get(stack[-1], -1)): # Operator precedence handling
+                    postfix.append(stack.pop()) # Pop higher precedence operators and append to postfix
+                stack.append(token) # Push current operator to stack
 
-        while stack:
+        while stack: # Pop remaining operators from stack and append to postfix
             postfix.append(stack.pop())
 
         return postfix
     
     def to_cnf(self):
-        symbols = list(self.symbols.keys())
+        symbols = list(self.symbols.keys()) # Get a list of symbol names
         cnf_clauses = []
-        postfix = self.postfix
+        postfix = self.postfix # Get the postfix expression
         stack = []
 
-        for token in postfix:
+        for token in postfix: # Iterate through tokens in postfix expression
             if isinstance(token, PropositionalSymbol):
-                stack.append(token.symbol)
-            elif token == '~':
+                stack.append(token.symbol) # Push symbol name to stack
+            elif token == '~': # If token is negation
                 operand = stack.pop()
-                stack.append(f"~{operand}")
+                stack.append(f"~{operand}") # Add negation to operand and push to stack
             else:
                 right = stack.pop()
                 left = stack.pop()
-                if token == '&':
-                    stack.append(f"({left} & {right})")
-                elif token == '||':
+                if token == '&': # Logical AND
+                    stack.append(f"({left} & {right})") # Create CNF clause for AND operation
+                elif token == '||': # Logical OR
                     stack.append(f"({left} || {right})")
-                elif token == '=>':
+                elif token == '=>': # Implication
                     stack.append(f"(~{left} || {right})")
-                elif token == '<=>':
+                elif token == '<=>': # Equivalence
                     stack.append(f"(({left} & {right}) || (~{left} & ~{right}))")
 
-        expression = stack.pop()
-        expression = expression.replace("&", " and ").replace("||", " or ").replace("~", "not ")
-        cnf_expression = sympy.to_cnf(expression)
-        cnf_clauses_str = str(cnf_expression).replace("(", "").replace(")", "").split(" & ")
+        expression = stack.pop() # Get the final CNF expression
+        expression = expression.replace("&", " and ").replace("||", " or ").replace("~", "not ") # Format expression
+        cnf_expression = sympy.to_cnf(expression) # Convert expression to CNF using sympy
+        cnf_clauses_str = str(cnf_expression).replace("(", "").replace(")", "").split(" & ") # Split CNF expression into clauses
 
-        for clause_str in cnf_clauses_str:
-            clause = clause_str.replace(" or ", "").split("|")
-            cnf_clause = []
-            for literal in clause:
-                literal = literal.strip()
-                if literal.startswith("not"):
-                    symbol_name = literal[4:]
-                    if symbol_name in symbols:
-                        cnf_clause.append(-(symbols.index(symbol_name) + 1))
-                else:
-                    if literal in symbols:
-                        cnf_clause.append(symbols.index(literal) + 1)
-            cnf_clauses.append(cnf_clause)
+        for clause_str in cnf_clauses_str:  # Iterate through CNF clauses
+            clause = clause_str.replace(" or ", "").split("|")  # Split clause into literals
+            cnf_clause = []  # Initialize list for CNF clause
+            for literal in clause: 
+                literal = literal.strip()  # Remove leading and trailing spaces
+                if literal.startswith("not"):  # If literal is negated
+                    symbol_name = literal[4:]  # Get symbol name
+                    if symbol_name in symbols:  # Check if symbol exists
+                        cnf_clause.append(-(symbols.index(symbol_name) + 1))  # Add negated symbol index to clause
+                else:  # If literal is not negated
+                    if literal in symbols:  # Check if symbol exists
+                        cnf_clause.append(symbols.index(literal) + 1)  # Add symbol index to clause
+            cnf_clauses.append(cnf_clause)  # Append CNF clause to list of CNF clauses
 
-        return cnf_clauses
+        return cnf_clauses  # Return CNF clauses
