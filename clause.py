@@ -130,18 +130,22 @@ class Clause:
                     stack.append(f"(({left} & {right}) || (~{left} & ~{right}))")
 
         expression = stack.pop()
-        expression = expression.replace("&", "and").replace("||", "or").replace("~", "not ")
+        expression = expression.replace("&", " and ").replace("||", " or ").replace("~", "not ")
         cnf_expression = sympy.to_cnf(expression)
         cnf_clauses_str = str(cnf_expression).replace("(", "").replace(")", "").split(" & ")
 
         for clause_str in cnf_clauses_str:
-            clause = clause_str.replace("or", "").replace(" ", "").split("|")
+            clause = clause_str.replace(" or ", "").split("|")
             cnf_clause = []
             for literal in clause:
+                literal = literal.strip()
                 if literal.startswith("not"):
-                    cnf_clause.append(-symbols.index(literal[3:]) - 1)
+                    symbol_name = literal[4:]
+                    if symbol_name in symbols:
+                        cnf_clause.append(-(symbols.index(symbol_name) + 1))
                 else:
-                    cnf_clause.append(symbols.index(literal) + 1)
+                    if literal in symbols:
+                        cnf_clause.append(symbols.index(literal) + 1)
             cnf_clauses.append(cnf_clause)
 
         return cnf_clauses

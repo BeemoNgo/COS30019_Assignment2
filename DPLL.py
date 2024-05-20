@@ -1,7 +1,10 @@
 class DPLL:
     def __init__(self):
-        self.result = "NO"
+        self.output = ""
         self.assignments = {}
+
+    def getOutput(self):
+        return self.output
 
     def infer(self, kb, symbols):
         cnf_formula = []
@@ -10,8 +13,8 @@ class DPLL:
         
         result, assignments = self.dpll_recursion(cnf_formula, {})
         if result:
-            self.result = "YES: " + ", ".join(f"{sym}={val}" for sym, val in assignments.items())
-        return self.result
+            self.output = "YES: " + ", ".join(f"{symbols[abs(sym) - 1]}={val}" for sym, val in assignments.items())
+        return self.output
 
     def unit_propagation(self, formula, assignments):
         while any(len(clause) == 1 for clause in formula):
@@ -58,4 +61,4 @@ class DPLL:
         new_formula = [clause for clause in formula if -literal not in clause]
         return self.dpll_recursion(new_formula, {**assignments, abs(literal): False})
 
-
+    
