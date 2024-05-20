@@ -6,8 +6,8 @@ class BC:
         self.output = "NO"  
         self.outputSymbols = [] 
 
-    def getOutput(self):  # Method to get the output
-        return self.output  # Return the output value
+    def getOutput(self):  
+        return self.output  
 
     def infer(self, kb, query): 
         if self.BC_recursion(kb, query.get_symbols()[0], []):  # Call the BC_recursion method
@@ -45,3 +45,4 @@ class BC:
                         self.outputSymbols.append(query)
                     return True  # Return True if all left-hand symbols are true
         return False  # Return False if query cannot be inferred from KB
+ 
