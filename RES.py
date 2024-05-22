@@ -37,7 +37,8 @@ class RES:
         clauses_list = list(clauses)  # Convert set to list for indexing
         while True:
             n = len(clauses_list) 
-            pairs = [(clauses_list[i], clauses_list[j]) for i in range(n) for j in range(i + 1, n)]  # Generate all pairs of clauses
+            # Generate all pairs of clauses
+            pairs = [(clauses_list[i], clauses_list[j]) for i in range(n) for j in range(i + 1, n)]  
 
             for (ci, cj) in pairs:  
                 resolve = self.resolve(ci, cj)  # Attempt to resolve the pair of clauses
