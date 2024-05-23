@@ -1,13 +1,13 @@
 class RES:
     def __init__(self):
-        self.output = "" 
+        self.output = ""
 
     def getOutput(self):
-        return self.output  
-    
+        return self.output
+
     def infer(self, kb, query):
-        cnf_formula = []  
-        for clause in kb:  
+        cnf_formula = []
+        for clause in kb:
             cnf_formula.extend(clause.to_cnf())  # Convert each clause to CNF and add to cnf_formula
         query_clause = query.to_cnf()  # Convert query to CNF
         cnf_formula.extend(query_clause)  # Add query CNF clause to cnf_formula
@@ -17,7 +17,7 @@ class RES:
             self.output = "NO"  # Set output as "NO" if resolution algorithm returns True
         else:
             self.output = "YES"  # Set output as "YES" if resolution algorithm returns False
-        return self.output 
+        return self.output
 
     def resolve(self, c1, c2):
         """ Attempt to resolve two clauses c1 and c2, return None if no resolution is possible. """
@@ -29,18 +29,18 @@ class RES:
                 new_clause.update(c2)
                 new_clause.remove(-lit)
                 return frozenset(new_clause)  # Return the resolved clause as a frozenset
-        return None 
+        return None
 
     def resolution_algorithm(self, clauses):
         """ Applies the resolution algorithm on a set of clauses, returns if it's unsatisfiable. """
         new = set()  # Initialize a set to store newly derived clauses
         clauses_list = list(clauses)  # Convert set to list for indexing
         while True:
-            n = len(clauses_list) 
+            n = len(clauses_list)
             # Generate all pairs of clauses
-            pairs = [(clauses_list[i], clauses_list[j]) for i in range(n) for j in range(i + 1, n)]  
+            pairs = [(clauses_list[i], clauses_list[j]) for i in range(n) for j in range(i + 1, n)]
 
-            for (ci, cj) in pairs:  
+            for (ci, cj) in pairs:
                 resolve = self.resolve(ci, cj)  # Attempt to resolve the pair of clauses
                 if resolve is not None:  # If resolution is successful
                     if len(resolve) == 0:  # If an empty clause is found

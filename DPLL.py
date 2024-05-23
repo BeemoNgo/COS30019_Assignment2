@@ -1,71 +1,84 @@
+from clause import Clause
+
 class DPLL:
     def __init__(self):
         self.output = ""
         self.assignments = {}
 
-    def getOutput(self):
-        return self.output
-
-    def infer(self, kb, symbols):
-        # Convert the knowledge base (kb) to Conjunctive Normal Form (CNF)
+    def infer(self, kb, query):
         cnf_formula = []
         for clause in kb:
             cnf_formula.extend(clause.to_cnf())
-        
-        # Perform DPLL recursion to check satisfiability
-        result, assignments = self.dpll_recursion(cnf_formula, {})
-        if result:
-            # If satisfiable, set the output to "YES"
-            self.output = "YES"
+
+        # Negate the query and convert to CNF
+        negationOfQuery = Clause(f"~({query.expression})")
+        cnf_formula.extend(negationOfQuery.to_cnf())
+
+        # Apply the DPLL algorithm to the combined formula
+        result, self.assignments = self.dpll_recursion(cnf_formula, {}, set(literal for clause in cnf_formula for literal in clause))
+
+        # Correct interpretation of the DPLL result
+        self.output = "YES" if not result else "NO"  # If unsatisfiable (result is False), query is true (output YES)
         return self.output
 
+    def dpll_recursion(self, formula, assignments, symbols):
+        formula, assignments = self.unit_propagation(formula, assignments)
+        formula, assignments = self.pure_literal_elimination(formula, assignments)
+
+        if not formula:
+            return True, assignments  # Satisfiable
+
+        if [] in formula:
+            return False, {}  # Unsatisfiable
+
+        literal = self.choose_literal(formula, symbols)
+        new_assignments = assignments.copy()
+        new_assignments[literal] = True
+        new_formula = self.simplify(formula, literal)
+
+        result, result_assignments = self.dpll_recursion(new_formula, new_assignments, symbols)
+        if result:
+            return True, result_assignments
+
+        new_assignments[literal] = False
+        negationLiteral = -literal
+        new_formula = self.simplify(formula, negationLiteral)
+
+        return self.dpll_recursion(new_formula, new_assignments, symbols)
+
+    def simplify(self, formula, literal):
+        newFormula = []
+        for clause in formula:
+            if literal in clause:
+                continue
+            new_clause = [subClause for subClause in clause if subClause != -literal]
+            newFormula.append(new_clause)
+        return newFormula
+
     def unit_propagation(self, formula, assignments):
-        # Continue unit propagation until no more unit clauses exist
-        while any(len(clause) == 1 for clause in formula):
-            unit = next(clause[0] for clause in formula if len(clause) == 1) # Find the first unit clause
-            formula = [clause for clause in formula if unit not in clause]# Remove clauses containing the unit
-            # Remove negations of the unit from remaining clauses
-            formula = [[lit for lit in clause if -unit != lit] for clause in formula] 
-            assignments[abs(unit)] = True if unit > 0 else False # Update assignments based on the unit clause
+        changed = True
+        while changed:
+            changed = False
+            unit_clauses = [clause for clause in formula if len(clause) == 1]
+            for unit in unit_clauses:
+                literal = unit[0]
+                if literal not in assignments:
+                    formula = self.simplify(formula, literal)
+                    assignments[literal] = True
+                    changed = True
         return formula, assignments
 
     def pure_literal_elimination(self, formula, assignments):
-        all_literals = set(abs(lit) for clause in formula for lit in clause) # Get all literals in the formula
+        all_literals = set(literal for clause in formula for literal in clause)
+        pure_literals = {literal for literal in all_literals if -literal not in all_literals}
+        for literal in pure_literals:
+            formula = self.simplify(formula, literal)
+            assignments[literal] = True
+        return formula, assignments
 
-        for literal in all_literals: # Check for pure literals and update formula and assignments
-            positive_literal = all(literal in clause for clause in formula if abs(literal) in clause)
-            negative_literal = all(-literal in clause for clause in formula if abs(literal) in clause)
+    def choose_literal(self, formula, symbols):
+        unassigned_symbols = symbols - set(self.assignments.keys())
+        return next(iter(unassigned_symbols)) if unassigned_symbols else next(iter(symbols))
 
-            if positive_literal:
-                formula = [clause for clause in formula if literal not in clause and -literal not in clause]
-                assignments[literal] = True
-            elif negative_literal:
-                formula = [clause for clause in formula if -literal not in clause and literal not in clause]
-                assignments[literal] = False
-        
-        return formula, assignments # Return the updated formula and assignments
-
-    def dpll_recursion(self, formula, assignments):
-        formula, assignments = self.unit_propagation(formula, assignments) # Perform unit propagation
-        
-        # If formula is empty, return True and assignments (satisfiable)
-        if not formula:
-            return True, assignments
-        # If any clause is empty, return False (unsatisfiable)
-        if any(len(clause) == 0 for clause in formula):
-            return False, {}
-        # Perform pure literal elimination
-        formula, assignments = self.pure_literal_elimination(formula, assignments)
-        
-        for clause in formula: # Choose a literal for branching
-            if len(clause) > 0:
-                literal = clause[0]
-                break
-
-        new_formula = [clause for clause in formula if literal not in clause] # Explore positive branch
-        positive_branch = self.dpll_recursion(new_formula, {**assignments, abs(literal): True})
-        if positive_branch[0]:
-            return positive_branch
-        
-        new_formula = [clause for clause in formula if -literal not in clause] # Explore negative branch
-        return self.dpll_recursion(new_formula, {**assignments, abs(literal): False})
+    def evaluate_clause(self, clause, assignments):
+        return any(assignments.get(literal, False) for literal in clause)
