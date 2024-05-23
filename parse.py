@@ -1,4 +1,4 @@
-import sympy 
+import sympy
 import random
 import string
 import re
@@ -30,7 +30,7 @@ class Parse():
             self.knowledge_base.append(Clause(x))
         self.extract_symbols()
         return self.knowledge_base, self.query, self.symbols
-    
+
     def extract_symbols(self):
         # Initialize a set to keep symbols unique
         symbol_set = set()

@@ -1,7 +1,5 @@
 import sys
 from parse import Parse
-from clause import Clause
-from propositionalSymbol import PropositionalSymbol
 from TT import TT
 from FC import FC
 from BC import BC
@@ -13,7 +11,7 @@ class Environment:
         self.knowledge_base = None
         self.query = None
         self.symbols = None
-    
+
     def readFile(self, filename):
         parse = Parse()
         parse.readfile(filename)
@@ -24,7 +22,7 @@ class Environment:
 def main():
     if len(sys.argv) != 3:
         raise Exception("Wrong number of arguments")
-    
+
     filename = sys.argv[1]
     method = sys.argv[2].lower()
 
@@ -38,10 +36,10 @@ def main():
         "dpll": DPLL,
         "res": RES
     }
-    
+
     if method not in methods:
         raise Exception("There is no such method, the available methods are TT, FC, BC, DPLL, and RES")
-    
+
     algorithm_class = methods[method]
     algorithm = algorithm_class()
     algorithm.infer(environment.knowledge_base, environment.query)
@@ -49,4 +47,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-        
+

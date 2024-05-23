@@ -1,42 +1,42 @@
-import sys  
-sys.setrecursionlimit(10000)  
-import copy  
-from propositionalSymbol import PropositionalSymbol 
+import sys
+sys.setrecursionlimit(10000)
+import copy
+from propositionalSymbol import PropositionalSymbol
 
 class TT:
     def __init__(self):
-        self.output = ""  
-        self.count = 0 
-        self.check = None  
+        self.output = ""
+        self.count = 0
+        self.check = None
 
     def getOutput(self):
-        return self.output  
+        return self.output
 
     def infer(self, kb, query):
         # Collect all unique symbols from both the query and the knowledge base
         temp = [x for x in query.symbols.keys()]  # Get list of symbols from the query
         lst = []
-        for x in kb:  
+        for x in kb:
             t1 = x.get_symbols()  # Get symbols from each clause
             lst.extend(t1)  # Extend list with symbols
-        temp.extend(lst) 
+        temp.extend(lst)
         temp = list(set(temp))  # Remove duplicates and convert to list
-        symbols = {} 
+        symbols = {}
         for x in temp:  # Iterate through unique symbols
-            symbols[x] = PropositionalSymbol(x, False) 
+            symbols[x] = PropositionalSymbol(x, False)
 
         self.TTCheckAll(kb, query, list(symbols.keys()), {})  # Perform truth table enumeration
         if self.check == "NO":  # If check is "NO" (unsatisfiable)
-            self.output = "NO" 
+            self.output = "NO"
         else:
-            self.output = f"YES: {self.count}"  
-    
+            self.output = f"YES: {self.count}"
+
     def PLTrue(self, kb, model):
-        for x in kb: 
+        for x in kb:
             x.set_propositional_symbol(model)  # Set symbols in the clause using the model
             if x.evaluate() == False:  # If clause is not true in the model
-                return False 
-        return True  
+                return False
+        return True
 
     def TTCheckAll(self, kb, query, symbols, model):
         if self.check == "NO":  # If already unsatisfiable
@@ -48,7 +48,7 @@ class TT:
                 if query.evaluate():  # If the model satisfies the query
                     self.count += 1  # Increment count of true assignments
                 else:
-                    self.check = "NO" 
+                    self.check = "NO"
         else:
             first_symbol = symbols.pop(0)  # Get and remove first symbol from symbols list
 
