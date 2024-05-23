@@ -1,7 +1,6 @@
 from propositionalSymbol import PropositionalSymbol
 import re
 import sympy
-from sympy import And, Or, Implies, Not, Equivalent, Symbol
 from sympy.logic.boolalg import to_cnf
 
 class Clause:
@@ -9,17 +8,11 @@ class Clause:
         self.expression = expression.strip()
         self.symbols = {}  # Store symbols as a dictionary for easy access
         self.postfix = self.infix_to_postfix(self.expression)
-        self.count = 0
 
     def set_propositional_symbol(self, model):
         for symbol_name, symbol_obj in self.symbols.items():
             if symbol_name in model:
                 symbol_obj.set_propositional_symbol(model)
-
-    def get_count(self):
-        if len(self.postfix) >= 3:
-            self.count = len(self.symbols) - 1
-        return self.count
 
     def isInferredSymbol(self):
         return len(self.postfix) == 1
@@ -86,8 +79,6 @@ class Clause:
 
     def to_cnf(self):
         stack = []
-        symbol_to_int = {symbol: idx + 1 for idx, symbol in enumerate(self.symbols)}
-
         for token in self.postfix:
             if isinstance(token, PropositionalSymbol):
                 stack.append(sympy.Symbol(token.symbol))
@@ -96,7 +87,7 @@ class Clause:
                 stack.append(sympy.Not(operand))
             else:
                 right = stack.pop()
-                if stack:
+                if token in ['&', '||', '=>', '<=>'] and stack:
                     left = stack.pop()
                 if token == '&':
                     stack.append(sympy.And(left, right))
@@ -114,14 +105,10 @@ class Clause:
         cnf_clauses = []
 
         for clause in clauses:
-            literals = re.findall(r'[a-zA-Z][a-zA-Z0-9]*', clause)
+            literals = re.findall(r'(~?[a-zA-Z][a-zA-Z0-9]*)', clause)
             cnf_clause = []
             for literal in literals:
-                negated = False
-                if "~" + literal in clause:
-                    negated = True
-                symbol_index = symbol_to_int[literal]
-                cnf_clause.append(-symbol_index if negated else symbol_index)
+                cnf_clause.append(literal)
             cnf_clauses.append(cnf_clause)
 
         return cnf_clauses
